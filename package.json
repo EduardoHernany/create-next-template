@@ -1,0 +1,21 @@
+{
+    "name": "create-next-template",
+    "version": "1.0.0",
+    "description": "Um CLI para criar projetos Next.js com configuração padrão",
+    "bin": {
+      "create-next-template": "index.js"
+    },
+    "scripts": {
+      "start": "node index.js"
+    },
+    "keywords": [
+      "nextjs",
+      "template",
+      "cli",
+      "boilerplate"
+    ],
+    "author": "Seu Nome",
+    "license": "MIT",
+    "dependencies": {}
+  }
+  
