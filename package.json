@@ -1,21 +1,20 @@
 {
     "name": "next-template-ecotech-amazonia",
-    "version": "1.0.1",
+    "version": "1.0.2",
     "description": "Um CLI para criar projetos Next.js com configuração padrão",
     "bin": {
-      "create-next-template": "index.js"
+        "create-next-template": "index.js"
     },
     "scripts": {
-      "start": "node index.js"
+        "start": "node index.js"
     },
     "keywords": [
-      "nextjs",
-      "template",
-      "cli",
-      "boilerplate"
+        "nextjs",
+        "template",
+        "cli",
+        "boilerplate"
     ],
     "author": "Seu Nome",
     "license": "MIT",
     "dependencies": {}
-  }
-  
+}
