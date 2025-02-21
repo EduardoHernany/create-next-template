@@ -1,5 +1,5 @@
 {
-    "name": "create-next-template",
+    "name": "next-template-ecotech-amazonia",
     "version": "1.0.0",
     "description": "Um CLI para criar projetos Next.js com configuração padrão",
     "bin": {
