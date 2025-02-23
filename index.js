@@ -11,7 +11,7 @@ execSync(`npx create-next-app@latest ${projectName} --ts --eslint`, { stdio: "in
 
 console.log("📦 Instalando dependências...");
 execSync(
-  `cd ${projectName} && yarn add @tanstack/react-query @tanstack/react-query-devtools axios jsonwebtoken zod zustand react-hook-form @types/jsonwebtoken`,
+  `cd ${projectName} && yarn add dotenv @tanstack/react-query @tanstack/react-query-devtools axios jsonwebtoken zod zustand react-hook-form @types/jsonwebtoken`,
   { stdio: "inherit" }
 );
 execSync(
@@ -50,7 +50,6 @@ const files = {
       <p className="text-lg text-gray-600">Projeto inicial configurado!</p>
     </main>
   );
-}
 }`,
   "src/app/(public)/layout.tsx": `export default function PublicLayout({ children }: { children: React.ReactNode }) {
   return <div className="public-layout">{children}</div>;
@@ -191,7 +190,61 @@ export const customInstance = <T>(config: AxiosRequestConfig): Promise<T> => {
 export default api;
 `;
 
-const envCode = `NEXT_PUBLIC_API_URL=' '`;
+
+const envCode = `NEXT_PUBLIC_API_URL=' '
+		 NEXT_PUBLIC_API_URL_SWAGGER_JSON=' '
+`;
+
+const fetchSwaggerCode = `#!/usr/bin/env node
+/* eslint-disable @typescript-eslint/no-require-imports */
+
+const fs = require("fs");
+const path = require("path");
+const https = require("https");
+const http = require("http");
+require("dotenv").config();
+
+// Lê a variável do .env
+const SWAGGER_URL = process.env.NEXT_PUBLIC_API_URL_SWAGGER_JSON;
+
+if (!SWAGGER_URL) {
+  console.error("❌ Erro: A variável NEXT_PUBLIC_API_URL_SWAGGER_JSON não está definida no .env");
+  process.exit(1);
+}
+
+console.log(\`🔄 Baixando Swagger JSON de: \${SWAGGER_URL}...\`);
+
+const fetchSwaggerJson = (url) => {
+  const client = url.startsWith("https") ? https : http;
+  client
+    .get(url, (res) => {
+      let data = "";
+
+      if (res.statusCode !== 200) {
+        console.error(\`❌ Erro: Falha ao baixar Swagger JSON (Status: \${res.statusCode})\`);
+        process.exit(1);
+      }
+
+      res.on("data", (chunk) => {
+        data += chunk;
+      });
+
+      res.on("end", () => {
+        const filePath = path.join(process.cwd(), "swagger.json");
+
+        fs.writeFileSync(filePath, data);
+        console.log(\`✅ Swagger JSON salvo em: \${filePath}\`);
+      });
+    })
+    .on("error", (err) => {
+      console.error("❌ Erro ao buscar Swagger JSON:", err.message);
+      process.exit(1);
+    });
+};
+
+// Executa a função
+fetchSwaggerJson(SWAGGER_URL);
+`;
 
 const orvalConfigCode = `import { defineConfig } from 'orval'
 
@@ -230,6 +283,7 @@ const paths = [
   { path: "src/utils/setCookie.ts", content: setCookieCode },
   { path: "src/api/api.ts", content: apiCode },
   { path: ".env", content: envCode },
+  { path: "fetch-swagger.js", content: fetchSwaggerCode },
   { path: "orval.config.ts", content: orvalConfigCode },
 ];
 
@@ -243,6 +297,26 @@ paths.forEach(({ path: filePath, content }) => {
 
   fs.writeFileSync(fullPath, content);
 });
+
+// Caminho do package.json dentro do novo projeto
+const packageJsonPath = path.join(projectName, "package.json");
+
+// Lê o conteúdo atual do package.json
+const packageJson = JSON.parse(fs.readFileSync(packageJsonPath, "utf8"));
+
+// Adiciona os novos scripts ao package.json
+packageJson.scripts = {
+  ...packageJson.scripts,
+  "generate:api": "orval",
+  "fetch-swagger": "node fetch-swagger.js"
+};
+
+// Escreve as mudanças no package.json
+fs.writeFileSync(packageJsonPath, JSON.stringify(packageJson, null, 2));
+
+console.log("📜 Scripts adicionados ao package.json:");
+console.log('   - "generate:api": "orval"');
+console.log('   - "fetch-swagger": "node fetch-swagger.js"');
 
 console.log("✅ Setup concluído! Agora entre no diretório e inicie o projeto:");
 console.log(`   cd ${projectName}`);
